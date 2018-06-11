@@ -24,7 +24,7 @@ def _cleaning_user_selects():
 
     return (
         (CleaningUser.created < datetime.now())
-        & (CleaningDate.enabled == 1))
+        & (CleaningUser.enabled == 1))
 
 
 def _users():
