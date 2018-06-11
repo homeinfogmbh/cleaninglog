@@ -62,6 +62,7 @@ def _entries(start, end, user=None, address=None):
     return Log.select().where(expression)
 
 
+@APPLICATION.route('/users', methods=['GET'])
 @authenticated
 @authorized('cleaninglog')
 def list_users():
@@ -70,6 +71,7 @@ def list_users():
     return JSON([user.to_dict() for user in _users()])
 
 
+@APPLICATION.route('/', methods=['GET'])
 @authenticated
 @authorized('cleaninglog')
 def list_entries():
