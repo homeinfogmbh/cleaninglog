@@ -22,7 +22,7 @@ class UserExists(Exception):
     pass
 
 
-class _CleaningVerificationModel(Model):
+class _CleaningLogModel(Model):
     """Base model for the cleaning verification database."""
 
     class Meta:
@@ -32,7 +32,7 @@ class _CleaningVerificationModel(Model):
     id = PrimaryKeyField()
 
 
-class User(_CleaningVerificationModel):
+class User(_CleaningLogModel):
     """A cleaning user."""
 
     pin = CharField(4)
@@ -61,7 +61,7 @@ class User(_CleaningVerificationModel):
         return cls.get((cls.pin == pin) & (cls.customer == customer))
 
 
-class Log(_CleaningVerificationModel):
+class Log(_CleaningLogModel):
     """Actual cleaning log."""
 
     user = ForeignKeyField(User, column_name='user')

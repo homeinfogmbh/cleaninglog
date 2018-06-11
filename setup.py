@@ -11,5 +11,6 @@ setup(
     maintainer='Richard Neumann',
     maintainer_email='<r dot neumann at homeinfo priod de>',
     packages=['cleaninglog', 'cleaninglog.wsgi'],
+    data_files=[('/etc/his.d/locale', ['files/cleaninglog.ini'])],
     license='GPLv3',
     description='HIS microservice to handle cleaning logs.')
