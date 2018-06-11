@@ -1,5 +1,5 @@
 """Microservice for cleaning verifications."""
 
-from cleaninglog.wsgi import APPLICATION, HIS
+from cleaninglog.wsgi import APPLICATION
 
-__all__ = ['APPLICATION', 'HIS']
+__all__ = ['APPLICATION']

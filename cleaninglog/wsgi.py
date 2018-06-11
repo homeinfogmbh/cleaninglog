@@ -1,5 +1,7 @@
 """Authenticated and authorized HIS services."""
 
+from datetime import datetime
+
 from flask import request
 
 from his import CUSTOMER, authenticated, authorized, Application
@@ -8,27 +10,39 @@ from terminallib import Terminal
 from timelib import strpdatetime
 from wsgilib import JSON
 
-from cleaninglog.messages import NoSuchUser, NoSuchTerminal
-from cleaninglog.orm import User, Log
-from cleaninglog.wsgi.common import get_address
+from cleaninglog.messages import NoSuchUser, NoSuchTerminal, TerminalUnlocated
+from digsigdb import CleaningUser, CleaningDate
+
+__all__ = ['APPLICATION']
 
 
 APPLICATION = Application('Cleaning Log', cors=True, debug=True)
 
 
+def _cleaning_user_selects():
+    """Returns a basic expression for cleaning users selection."""
+
+    return (
+        (CleaningUser.created < datetime.now())
+        & (CleaningDate.enabled == 1))
+
+
 def _users():
     """Yields the customer's users."""
 
-    return User.select().where(User.customer == CUSTOMER.id)
+    return CleaningUser.select().where(
+        (CleaningUser.customer == CUSTOMER.id) & _cleaning_user_selects())
 
 
 def _user(ident):
     """Returns the respective user."""
 
     try:
-        return User.select().where(
-            (User.id == ident) & (User.customer == CUSTOMER.id)).get()
-    except User.DoesNotExist:
+        return CleaningUser.select().where(
+            (CleaningUser.id == ident)
+            & (CleaningUser.customer == CUSTOMER.id)
+            & _cleaning_user_selects()).get()
+    except CleaningUser.DoesNotExist:
         raise NoSuchUser()
 
 
@@ -42,27 +56,35 @@ def _terminal(tid):
         raise NoSuchTerminal()
 
 
+def _address(terminal):
+    """Returns the terminal's address."""
+
+    try:
+        return terminal.location.address
+    except AttributeError:
+        return TerminalUnlocated()
+
+
 def _entries(start, end, user=None, address=None):
     """Yields the respective customer's entries."""
 
     if user is None:
-        expression = Log.user << [user.id for user in _users()]
+        expression = CleaningDate.user << [user.id for user in _users()]
     else:
-        expression = Log.user == user
+        expression = CleaningDate.user == user
 
     if address is not None:
-        expression &= Log.address == address
+        expression &= CleaningDate.address == address
 
     if start is not None:
-        expression &= Log.timestamp >= start
+        expression &= CleaningDate.timestamp >= start
 
     if end is not None:
-        expression &= Log.timestamp <= end
+        expression &= CleaningDate.timestamp <= end
 
-    return Log.select().where(expression)
+    return CleaningDate.select().where(expression)
 
 
-@APPLICATION.route('/users', methods=['GET'])
 @authenticated
 @authorized('cleaninglog')
 def list_users():
@@ -71,7 +93,6 @@ def list_users():
     return JSON([user.to_dict() for user in _users()])
 
 
-@APPLICATION.route('/', methods=['GET'])
 @authenticated
 @authorized('cleaninglog')
 def list_entries():
@@ -96,7 +117,13 @@ def list_entries():
     except (ValueError, TypeError):
         return NotAnInteger()
     else:
-        address = get_address(_terminal(tid))
+        address = _address(_terminal(tid))
 
     entries = _entries(start, end, user=user, address=address)
     return JSON([entry.to_dict() for entry in entries])
+
+
+ROUTES = (
+    ('GET', '/', list_entries, 'list_entries'),
+    ('GET', '/users', list_users, 'list_users'))
+APPLICATION.add_routes(ROUTES)
