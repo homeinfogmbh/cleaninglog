@@ -1,13 +1,12 @@
 """WSGI Messages."""
 
-from his import locales, Message
+from his import Message
 
 
 class _CleaningLogMessage(Message):
     """Abstract base message."""
 
-    ABSTRACT = True
-    LOCALES = locales('/etc/his.d/locale/cleaninglog.ini')
+    LOCALES = '/etc/his.d/locale/cleaninglog.ini'
 
 
 class NoSuchTerminal(_CleaningLogMessage):
