@@ -6,7 +6,7 @@ from his import Message
 class _CleaningLogMessage(Message):
     """Abstract base message."""
 
-    LOCALES = '/etc/his.d/locale/cleaninglog.ini'
+    DOMAIN = 'cleaninglog'
 
 
 class NoSuchTerminal(_CleaningLogMessage):
