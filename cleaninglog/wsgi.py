@@ -65,7 +65,7 @@ def _address(terminal):
         return TerminalUnlocated()
 
 
-def _entries(start, end, user=None, address=None):
+def _entries(since, until, user=None, address=None):
     """Yields the respective customer's entries."""
 
     if user is None:
@@ -76,11 +76,11 @@ def _entries(start, end, user=None, address=None):
     if address is not None:
         expression &= CleaningDate.address == address
 
-    if start is not None:
-        expression &= CleaningDate.timestamp >= start
+    if since is not None:
+        expression &= CleaningDate.timestamp >= since
 
-    if end is not None:
-        expression &= CleaningDate.timestamp <= end
+    if until is not None:
+        expression &= CleaningDate.timestamp <= until
 
     return CleaningDate.select().where(expression)
 
@@ -98,8 +98,8 @@ def list_users():
 def list_entries():
     """Lists the cleaning log entries of the respective customer."""
 
-    start = strpdatetime_or_time(request.args.get('from'))
-    end = strpdatetime_or_time(request.args.get('until'))
+    since = strpdatetime_or_time(request.args.get('since'))
+    until = strpdatetime_or_time(request.args.get('until'))
 
     try:
         user = int(request.args['user'])
@@ -119,7 +119,7 @@ def list_entries():
     else:
         address = _address(_terminal(tid))
 
-    entries = _entries(start, end, user=user, address=address)
+    entries = _entries(since, until, user=user, address=address)
     return JSON([entry.to_dict() for entry in entries])
 
 
