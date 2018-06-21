@@ -1,6 +1,5 @@
 """Authenticated and authorized HIS services."""
 
-from contextlib import suppress
 from datetime import datetime
 
 from flask import request
@@ -8,7 +7,7 @@ from flask import request
 from his import CUSTOMER, authenticated, authorized, Application
 from his.messages import NotAnInteger
 from terminallib import Terminal
-from timelib import DATE_FORMAT, DATETIME_BASE, DATETIME_FORMAT
+from timelib import strpdatetime_or_time
 from wsgilib import JSON
 
 from cleaninglog.messages import NoSuchUser, NoSuchTerminal, TerminalUnlocated
@@ -18,23 +17,6 @@ __all__ = ['APPLICATION']
 
 
 APPLICATION = Application('Cleaning Log', cors=True, debug=True)
-SHORT_TIME_FORMAT = '%H:%M'
-DATETIME_FORMATS = (
-    DATE_FORMAT, DATETIME_FORMAT, SHORT_TIME_FORMAT,
-    DATETIME_BASE.format(DATE_FORMAT, SHORT_TIME_FORMAT))
-
-
-def _parse_datetime(string):
-    """Parses a datetime from the given string."""
-
-    if string is None:
-        return None
-
-    for date_format in DATETIME_FORMATS:
-        with suppress(ValueError):
-            return datetime.strptime(string, date_format)
-
-    raise ValueError('Invalid datetime or time format: {}'.format(string))
 
 
 def _cleaning_user_selects():
@@ -116,8 +98,8 @@ def list_users():
 def list_entries():
     """Lists the cleaning log entries of the respective customer."""
 
-    start = _parse_datetime(request.args.get('from'))
-    end = _parse_datetime(request.args.get('until'))
+    start = strpdatetime_or_time(request.args.get('from'))
+    end = strpdatetime_or_time(request.args.get('until'))
 
     try:
         user = int(request.args['user'])
