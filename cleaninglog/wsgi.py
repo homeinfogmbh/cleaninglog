@@ -7,7 +7,7 @@ from flask import request
 from his import CUSTOMER, authenticated, authorized, Application
 from his.messages import NotAnInteger
 from terminallib import Terminal
-from timelib import strpdatetime_or_time
+from timelib import strpdatetime
 from wsgilib import JSON
 
 from cleaninglog.messages import NoSuchUser, NoSuchTerminal, TerminalUnlocated
@@ -98,8 +98,8 @@ def list_users():
 def list_entries():
     """Lists the cleaning log entries of the respective customer."""
 
-    since = strpdatetime_or_time(request.args.get('since'))
-    until = strpdatetime_or_time(request.args.get('until'))
+    since = strpdatetime(request.args.get('since'))
+    until = strpdatetime(request.args.get('until'))
 
     try:
         user = int(request.args['user'])
