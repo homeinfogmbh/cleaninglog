@@ -59,10 +59,12 @@ def _terminal(tid):
 def _address(terminal):
     """Returns the terminal's address."""
 
-    try:
-        return terminal.location.address
-    except AttributeError:
+    address = terminal.address
+
+    if address is None:
         return TerminalUnlocated()
+
+    return address
 
 
 def _entries(since, until, user=None, address=None):
