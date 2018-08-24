@@ -92,7 +92,7 @@ def _entries(since, until, user=None, address=None):
 def list_users():
     """Lists the cleaning log users of the respective customer."""
 
-    return JSON([user.to_dict() for user in _users()])
+    return JSON([user.to_json() for user in _users()])
 
 
 @authenticated
@@ -122,7 +122,7 @@ def list_entries():
         address = _address(_terminal(tid))
 
     entries = _entries(since, until, user=user, address=address)
-    return JSON([entry.to_dict() for entry in entries])
+    return JSON([entry.to_json() for entry in entries])
 
 
 ROUTES = (
