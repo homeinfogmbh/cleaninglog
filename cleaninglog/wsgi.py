@@ -16,7 +16,7 @@ from digsigdb import CleaningUser, CleaningDate
 __all__ = ['APPLICATION']
 
 
-APPLICATION = Application('Cleaning Log', cors=True, debug=True)
+APPLICATION = Application('Cleaning Log', debug=True)
 
 
 def _cleaning_user_selects():
