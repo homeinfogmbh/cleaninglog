@@ -13,6 +13,7 @@ from wsgilib import JSON
 from cleaninglog.messages import NoSuchUser, NoSuchTerminal, TerminalUnlocated
 from digsigdb import CleaningUser, CleaningDate
 
+
 __all__ = ['APPLICATION']
 
 

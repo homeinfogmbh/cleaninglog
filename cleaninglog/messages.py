@@ -3,6 +3,9 @@
 from his import Message
 
 
+__all__ = ['NoSuchTerminal', 'NoSuchUser', 'TerminalUnlocated']
+
+
 class _CleaningLogMessage(Message):
     """Abstract base message."""
 
