@@ -4,14 +4,16 @@ from datetime import datetime
 
 from flask import request
 
+from digsigdb import CleaningUser, CleaningDate
 from his import CUSTOMER, authenticated, authorized, Application
-from his.messages import NotAnInteger
+from his.messages.data import NOT_AN_INTEGER
 from terminallib import Terminal
 from timelib import strpdatetime
 from wsgilib import JSON
 
-from cleaninglog.messages import NoSuchUser, NoSuchTerminal, TerminalUnlocated
-from digsigdb import CleaningUser, CleaningDate
+from cleaninglog.messages import NO_SUCH_TERMINAL
+from cleaninglog.messages import NO_SUCH_USER
+from cleaninglog.messages import TERMINAL_NOT_LOCATED
 
 
 __all__ = ['APPLICATION']
@@ -44,7 +46,7 @@ def _user(ident):
             & (CleaningUser.customer == CUSTOMER.id)
             & _cleaning_user_selects()).get()
     except CleaningUser.DoesNotExist:
-        raise NoSuchUser()
+        raise NO_SUCH_USER
 
 
 def _terminal(tid):
@@ -54,7 +56,7 @@ def _terminal(tid):
         return Terminal.select().where(
             (Terminal.tid == tid) & (Terminal.customer == CUSTOMER.id)).get()
     except Terminal.DoesNotExist:
-        raise NoSuchTerminal()
+        raise NO_SUCH_TERMINAL
 
 
 def _address(terminal):
@@ -63,7 +65,7 @@ def _address(terminal):
     address = terminal.address
 
     if address is None:
-        return TerminalUnlocated()
+        return TERMINAL_NOT_LOCATED
 
     return address
 
@@ -109,7 +111,7 @@ def list_entries():
     except KeyError:
         user = None
     except (ValueError, TypeError):
-        return NotAnInteger()
+        return NOT_AN_INTEGER
     else:
         user = _user(user)
 
@@ -118,7 +120,7 @@ def list_entries():
     except KeyError:
         address = None
     except (ValueError, TypeError):
-        return NotAnInteger()
+        return NOT_AN_INTEGER
     else:
         address = _address(_terminal(tid))
 

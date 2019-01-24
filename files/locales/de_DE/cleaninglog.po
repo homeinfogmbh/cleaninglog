@@ -16,11 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Hand\n"
 
-msgid "NoSuchTerminal"
-msgstr "Kein solches Terminal vorhanden."
+#: messages.py:11
+msgid "The requested terminal does not exist."
+msgstr "Das gewünschte Terminal existiert nicht."
 
-msgid "NoSuchUser"
-msgstr "Kein solcher Benutzer vorhanden."
+#: messages.py:13
+msgid "The requested user does not exist."
+msgstr "Der gewünschte Benutzer existiert nicht."
 
-msgid "TerminalUnlocated"
-msgstr "Terminal hat keinen Ort zugewiesen."
+#: messages.py:15
+msgid "The requested terminal does not have an address."
+msgstr "Dem Terminal ist keine Adresse zugewiesen."
