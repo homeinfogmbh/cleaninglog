@@ -7,13 +7,13 @@ from flask import request
 from digsigdb import CleaningUser, CleaningDate
 from his import CUSTOMER, authenticated, authorized, Application
 from his.messages.data import NOT_AN_INTEGER
-from terminallib import Terminal
+from terminallib import Location, System
 from timelib import strpdatetime
 from wsgilib import JSON
 
-from cleaninglog.messages import NO_SUCH_TERMINAL
+from cleaninglog.messages import NO_SUCH_SYSTEM
 from cleaninglog.messages import NO_SUCH_USER
-from cleaninglog.messages import TERMINAL_NOT_LOCATED
+from cleaninglog.messages import SYSTEM_NOT_LOCATED
 
 
 __all__ = ['APPLICATION']
@@ -49,23 +49,23 @@ def _user(ident):
         raise NO_SUCH_USER
 
 
-def _terminal(tid):
-    """Returns the respective terminal."""
+def _system(ident):
+    """Returns the respective system."""
 
     try:
-        return Terminal.select().where(
-            (Terminal.tid == tid) & (Terminal.customer == CUSTOMER.id)).get()
-    except Terminal.DoesNotExist:
-        raise NO_SUCH_TERMINAL
+        return System.select().join(Location).where(
+            (System.id == ident) & (Location.customer == CUSTOMER.id)).get()
+    except System.DoesNotExist:
+        raise NO_SUCH_SYSTEM
 
 
-def _address(terminal):
-    """Returns the terminal's address."""
+def _address(system):
+    """Returns the system's address."""
 
-    address = terminal.address
+    address = system.address
 
     if address is None:
-        return TERMINAL_NOT_LOCATED
+        return SYSTEM_NOT_LOCATED
 
     return address
 
@@ -116,13 +116,13 @@ def list_entries():
         user = _user(user)
 
     try:
-        tid = int(request.args['terminal'])
+        system = int(request.args['system'])
     except KeyError:
         address = None
     except (ValueError, TypeError):
         return NOT_AN_INTEGER
     else:
-        address = _address(_terminal(tid))
+        address = _address(_system(system))
 
     entries = _entries(since, until, user=user, address=address)
     return JSON([entry.to_json() for entry in entries])
