@@ -62,19 +62,19 @@ def _system(ident):
 def _address(system):
     """Returns the system's address."""
 
-    address = system.address
+    location = system.location
 
-    if address is None:
+    if location is None:
         return SYSTEM_NOT_LOCATED
 
-    return address
+    return location.address
 
 
 def _entries(since, until, user=None, address=None):
     """Yields the respective customer's entries."""
 
     if user is None:
-        expression = CleaningDate.user << [user.id for user in _users()]
+        expression = CleaningDate.user << {user.id for user in _users()}
     else:
         expression = CleaningDate.user == user
 
