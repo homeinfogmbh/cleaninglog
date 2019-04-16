@@ -7,13 +7,13 @@ from flask import request
 from digsigdb import CleaningUser, CleaningDate
 from his import CUSTOMER, authenticated, authorized, Application
 from his.messages.data import NOT_AN_INTEGER
-from terminallib import Location, System
+from terminallib import Deployment, System
 from timelib import strpdatetime
 from wsgilib import JSON
 
 from cleaninglog.messages import NO_SUCH_SYSTEM
 from cleaninglog.messages import NO_SUCH_USER
-from cleaninglog.messages import SYSTEM_NOT_LOCATED
+from cleaninglog.messages import SYSTEM_NOT_DEPLOYED
 
 
 __all__ = ['APPLICATION']
@@ -44,7 +44,8 @@ def _user(ident):
         return CleaningUser.select().where(
             (CleaningUser.id == ident)
             & (CleaningUser.customer == CUSTOMER.id)
-            & _cleaning_user_selects()).get()
+            & _cleaning_user_selects()
+        ).get()
     except CleaningUser.DoesNotExist:
         raise NO_SUCH_USER
 
@@ -53,8 +54,10 @@ def _system(ident):
     """Returns the respective system."""
 
     try:
-        return System.select().join(Location).where(
-            (System.id == ident) & (Location.customer == CUSTOMER.id)).get()
+        return System.select().join(Deployment).where(
+            (System.id == ident)
+            & (Deployment.customer == CUSTOMER.id)
+        ).get()
     except System.DoesNotExist:
         raise NO_SUCH_SYSTEM
 
@@ -62,12 +65,12 @@ def _system(ident):
 def _address(system):
     """Returns the system's address."""
 
-    location = system.location
+    deployment = system.deployment
 
-    if location is None:
-        return SYSTEM_NOT_LOCATED
+    if deployment is None:
+        return SYSTEM_NOT_DEPLOYED
 
-    return location.address
+    return deployment.address
 
 
 def _entries(since, until, user=None, address=None):
