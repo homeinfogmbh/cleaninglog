@@ -128,7 +128,8 @@ def list_entries():
         address = _address(_system(system))
 
     entries = _entries(since, until, user=user, address=address)
-    return JSON([entry.to_json() for entry in entries])
+    entries = [entry.to_json(annotations=True, cascade=2) for entry in entries]
+    return JSON(entries)
 
 
 ROUTES = (
