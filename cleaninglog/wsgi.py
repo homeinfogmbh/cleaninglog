@@ -4,16 +4,22 @@ from datetime import datetime
 
 from flask import request
 
-from digsigdb import CleaningUser, CleaningDate, CleaningAnnotation
 from his import CUSTOMER, authenticated, authorized, Application
-from his.messages.data import NOT_AN_INTEGER
 from terminallib import Deployment, System
 from timelib import strpdatetime
 from wsgilib import JSON
 
+from cleaninglog.messages import CLEANING_DATE_CREATED
+from cleaninglog.messages import CLEANING_DATE_DELETED
+from cleaninglog.messages import CLEANING_DATE_PATCHED
+from cleaninglog.messages import NO_DEPLOYMENT_SPECIFIED
+from cleaninglog.messages import NO_SUCH_CLEANING_DATE
+from cleaninglog.messages import NO_SUCH_DEPLOYMENT
 from cleaninglog.messages import NO_SUCH_SYSTEM
 from cleaninglog.messages import NO_SUCH_USER
+from cleaninglog.messages import NO_USER_SPECIFIED
 from cleaninglog.messages import SYSTEM_NOT_DEPLOYED
+from cleaninglog.orm import CleaningUser, CleaningDate, CleaningAnnotation
 
 
 __all__ = ['APPLICATION']
@@ -105,6 +111,17 @@ def _get_entries(since, until, user=None, deployment=None):
     return CleaningDate.select().where(expression)
 
 
+def _get_cleaning_date(ident):
+    """Returns the respective cleaning date."""
+
+    try:
+        return CleaningDate.select().join(CleaningUser).where(
+            (CleaningDate.id == ident) & (CleaningUser.customer == CUSTOMER.id)
+        ).get()
+    except CleaningDate.DoesNotExist:
+        raise NO_SUCH_CLEANING_DATE
+
+
 @authenticated
 @authorized('cleaninglog')
 def list_users():
@@ -159,19 +176,69 @@ def add_entry():
 
     deployment = _get_deployment(deployment)
     annotations = request.json.pop('annotations', None)
-    record = CleaningDate.from_json(request.json)
-    record.user = user
-    record.deployment = deployment
-    record.save()
+    cleaning_date = CleaningDate.from_json(request.json)
+    cleaning_date.user = user
+    cleaning_date.deployment = deployment
+    cleaning_date.save()
 
     if annotations:
         for text in annotations:
-            CleaningAnnotation(cleaning_date=record, text=text).save()
+            CleaningAnnotation(cleaning_date=cleaning_date, text=text).save()
 
-    return ENTRY_CREATED.update(id=record.id)
+    return CLEANING_DATE_CREATED.update(id=cleaning_date.id)
+
+
+@authenticated
+@authorized('cleaninglog')
+def modify_entry(ident):
+    """Modifies a cleaning log entry."""
+
+    cleaning_date = _get_cleaning_date(ident)
+
+    try:
+        user = request.json.pop('user')
+    except KeyError:
+        pass
+    else:
+        cleaning_date.user = _get_user(user)
+
+    try:
+        deployment = request.json.pop('deployment')
+    except KeyError:
+        pass
+    else:
+        cleaning_date.deployment = _get_deployment(deployment)
+
+    try:
+        annotations = request.json.pop('annotations')
+    except KeyError:
+        pass
+    else:
+        for annotation in cleaning_date.annotations:
+            annotation.delete_instance()
+
+        for text in annotations or ():
+            CleaningAnnotation(cleaning_date=cleaning_date, text=text).save()
+
+    cleaning_date.patch_json(request.json)
+    cleaning_date.save()
+    return CLEANING_DATE_PATCHED
+
+
+@authenticated
+@authorized('cleaninglog')
+def delete_entry(ident):
+    """Deletes a cleaning log entry."""
+
+    cleaning_date = _get_cleaning_date(ident)
+    cleaning_date.delete_instance()
+    return CLEANING_DATE_DELETED
 
 
 APPLICATION.add_routes((
-    ('GET', '/', list_entries, 'list_entries'),
-    ('GET', '/users', list_users, 'list_users')
+    ('GET', '/users', list_users),
+    ('GET', '/', list_entries),
+    ('POST', '/', add_entry),
+    ('PATCH', '/<int:ident>', modify_entry),
+    ('DELETE', '/<int:ident>', delete_entry)
 ))
