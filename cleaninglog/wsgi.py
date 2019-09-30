@@ -4,7 +4,7 @@ from datetime import datetime
 
 from flask import request
 
-from digsigdb import CleaningUser, CleaningDate
+from digsigdb import CleaningUser, CleaningDate, CleaningAnnotation
 from his import CUSTOMER, authenticated, authorized, Application
 from his.messages.data import NOT_AN_INTEGER
 from terminallib import Deployment, System
@@ -30,27 +30,39 @@ def _cleaning_user_selects():
         & (CleaningUser.enabled == 1))
 
 
-def _users():
+def _get_users():
     """Yields the customer's users."""
 
     return CleaningUser.select().where(
         (CleaningUser.customer == CUSTOMER.id) & _cleaning_user_selects())
 
 
-def _user(ident):
+def _get_user(ident):
     """Returns the respective user."""
 
     try:
-        return CleaningUser.select().where(
+        return CleaningUser.get(
             (CleaningUser.id == ident)
             & (CleaningUser.customer == CUSTOMER.id)
             & _cleaning_user_selects()
-        ).get()
+        )
     except CleaningUser.DoesNotExist:
         raise NO_SUCH_USER
 
 
-def _system(ident):
+def _get_deployment(ident):
+    """Returns a deployment by its id."""
+
+    try:
+        return Deployment.get(
+            (Deployment.id == ident)
+            & (Deployment.customer == CUSTOMER.id)
+        )
+    except Deployment.DoesNotExist:
+        return NO_SUCH_DEPLOYMENT
+
+
+def _get_system(ident):
     """Returns the respective system."""
 
     try:
@@ -62,7 +74,7 @@ def _system(ident):
         raise NO_SUCH_SYSTEM
 
 
-def _address(system):
+def _address_of(system):
     """Returns the system's address."""
 
     deployment = system.deployment
@@ -73,16 +85,16 @@ def _address(system):
     return deployment.address
 
 
-def _entries(since, until, user=None, address=None):
+def _get_entries(since, until, user=None, deployment=None):
     """Yields the respective customer's entries."""
 
     if user is None:
-        expression = CleaningDate.user << {user.id for user in _users()}
+        expression = CleaningDate.user << {user.id for user in _get_users()}
     else:
         expression = CleaningDate.user == user
 
-    if address is not None:
-        expression &= CleaningDate.address == address
+    if deployment is not None:
+        expression &= CleaningDate.deployment == deployment
 
     if since is not None:
         expression &= CleaningDate.timestamp >= since
@@ -98,7 +110,7 @@ def _entries(since, until, user=None, address=None):
 def list_users():
     """Lists the cleaning log users of the respective customer."""
 
-    return JSON([user.to_json() for user in _users()])
+    return JSON([user.to_json() for user in _get_users()])
 
 
 @authenticated
@@ -113,26 +125,53 @@ def list_entries():
         user = int(request.args['user'])
     except KeyError:
         user = None
-    except (ValueError, TypeError):
-        return NOT_AN_INTEGER
     else:
-        user = _user(user)
+        user = _get_user(user)
 
     try:
-        system = int(request.args['system'])
+        deployment = request.args['deployment']
     except KeyError:
-        address = None
-    except (ValueError, TypeError):
-        return NOT_AN_INTEGER
+        deployment = None
     else:
-        address = _address(_system(system))
+        deployment = _get_deployment(deployment)
 
-    entries = _entries(since, until, user=user, address=address)
+    entries = _get_entries(since, until, user=user, deployment=deployment)
     entries = [entry.to_json(annotations=True, cascade=3) for entry in entries]
     return JSON(entries)
 
 
-ROUTES = (
+@authenticated
+@authorized('cleaninglog')
+def add_entry():
+    """Adds a cleaning log entry."""
+
+    try:
+        user = request.json.pop('user')
+    except KeyError:
+        return NO_USER_SPECIFIED
+
+    user = _get_user(user)
+
+    try:
+        deployment = request.json.pop('deployment')
+    except KeyError:
+        return NO_DEPLOYMENT_SPECIFIED
+
+    deployment = _get_deployment(deployment)
+    annotations = request.json.pop('annotations', None)
+    record = CleaningDate.from_json(request.json)
+    record.user = user
+    record.deployment = deployment
+    record.save()
+
+    if annotations:
+        for text in annotations:
+            CleaningAnnotation(cleaning_date=record, text=text).save()
+
+    return ENTRY_CREATED.update(id=record.id)
+
+
+APPLICATION.add_routes((
     ('GET', '/', list_entries, 'list_entries'),
-    ('GET', '/users', list_users, 'list_users'))
-APPLICATION.add_routes(ROUTES)
+    ('GET', '/users', list_users, 'list_users')
+))
