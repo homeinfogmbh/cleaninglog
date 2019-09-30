@@ -13,7 +13,6 @@ __all__ = [
     'NO_SUCH_SYSTEM',
     'NO_SUCH_USER',
     'NO_USER_SPECIFIED',
-    'SYSTEM_NOT_DEPLOYED'
 ]
 
 
@@ -26,5 +25,3 @@ NO_SUCH_DEPLOYMENT = JSONMessage('No such deployment.', status=404)
 NO_SUCH_SYSTEM = JSONMessage('No such system.', status=404)
 NO_SUCH_USER = JSONMessage('No such user.', status=404)
 NO_USER_SPECIFIED = JSONMessage('No user specified.', status=400)
-SYSTEM_NOT_DEPLOYED = JSONMessage(
-    'The requested system is not deployed.', status=400)

@@ -18,7 +18,6 @@ from cleaninglog.messages import NO_SUCH_DEPLOYMENT
 from cleaninglog.messages import NO_SUCH_SYSTEM
 from cleaninglog.messages import NO_SUCH_USER
 from cleaninglog.messages import NO_USER_SPECIFIED
-from cleaninglog.messages import SYSTEM_NOT_DEPLOYED
 from cleaninglog.orm import CleaningUser, CleaningDate, CleaningAnnotation
 
 
@@ -78,17 +77,6 @@ def _get_system(ident):
         ).get()
     except System.DoesNotExist:
         raise NO_SUCH_SYSTEM
-
-
-def _address_of(system):
-    """Returns the system's address."""
-
-    deployment = system.deployment
-
-    if deployment is None:
-        return SYSTEM_NOT_DEPLOYED
-
-    return deployment.address
 
 
 def _get_entries(since, until, user=None, deployment=None):
@@ -181,9 +169,8 @@ def add_entry():
     cleaning_date.deployment = deployment
     cleaning_date.save()
 
-    if annotations:
-        for text in annotations:
-            CleaningAnnotation(cleaning_date=cleaning_date, text=text).save()
+    for text in annotations or ():
+        CleaningAnnotation(cleaning_date=cleaning_date, text=text).save()
 
     return CLEANING_DATE_CREATED.update(id=cleaning_date.id)
 
