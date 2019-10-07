@@ -1,16 +1,16 @@
 [Anjuta]
 Maximized=1
-Geometry=1920x983+0+27
+Geometry=1920x983+0+0
+
+[File Loader]
+Files=../../cleaninglog/wsgi.py#246%%%../../cleaninglog/orm.py#16%%%../../cleaninglog/exceptions.py#7%%%../../Makefile#17%%%../../cleaninglog/messages.py#27%%%../../cleaninglog/__init__.py#8
+
+[Document Manager]
+bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
 
 [Execution]
 Run in terminal=2
 Working directories=../../.
-
-[File Loader]
-Files=../../cleaninglog/wsgi.py#219%%%../../cleaninglog/orm.py#16%%%../../cleaninglog/exceptions.py#7%%%../../Makefile#17%%%../../cleaninglog/messages.py#27%%%../../cleaninglog/__init__.py#12
-
-[Document Manager]
-bookmarks=<?xml version="1.0" encoding="UTF-8"?>\n<bookmarks/>\n
 
 [Build]
 Configuration list=1:Default:%%%1:Debug:Debug%%%1:Profiling:Profiling%%%1:Optimized:Optimized
