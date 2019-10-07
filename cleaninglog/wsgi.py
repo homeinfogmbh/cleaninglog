@@ -10,7 +10,7 @@ from terminallib import Deployment, System
 from timelib import strpdatetime
 from wsgilib import JSON
 
-from cleaninglog.functions import make_response
+from cleaninglog.functions import by_deployment
 from cleaninglog.messages import CLEANING_DATE_CREATED
 from cleaninglog.messages import CLEANING_DATE_DELETED
 from cleaninglog.messages import CLEANING_DATE_PATCHED
@@ -224,25 +224,11 @@ def delete_entry(ident):
     return CLEANING_DATE_DELETED
 
 
-@preview(DeploymentPreviewToken)
-def preview_deployment(deployment):
-    """Lists cleaning entries for the respective system."""
-
-    try:
-        limit = int(request.args['limit'])
-    except KeyError:
-        limit = 10
-    else:
-        limit = limit or None
-
-    return make_response(CleaningDate.by_deployment(deployment, limit=limit))
-
-
 APPLICATION.add_routes((
     ('GET', '/users', list_users),
     ('GET', '/', list_entries),
     ('POST', '/', add_entry),
     ('PATCH', '/<int:ident>', modify_entry),
     ('DELETE', '/<int:ident>', delete_entry),
-    ('GET', '/preview', preview_deployment)
+    ('GET', '/preview', preview(DeploymentPreviewToken)(by_deployment))
 ))

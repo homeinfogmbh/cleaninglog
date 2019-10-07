@@ -1,11 +1,14 @@
 """Common functions."""
 
+from flask import request
+
 from wsgilib import ACCEPT, JSON, XML
 
 from cleaninglog.dom import cleanings
+from cleaninglog.orm import CleaningDate
 
 
-__all__ = ['make_response']
+__all__ = ['make_response', 'by_deployment']
 
 
 def make_response(cleaning_dates):
@@ -22,3 +25,16 @@ def make_response(cleaning_dates):
         xml.cleaning.append(cleaning_date.to_dom())
 
     return XML(xml)
+
+
+def by_deployment(deployment):
+    """Returns cleaning dates of the respective deployment."""
+
+    try:
+        limit = int(request.args['limit'])
+    except KeyError:
+        limit = 10
+    else:
+        limit = limit or None
+
+    return make_response(CleaningDate.by_deployment(deployment, limit=limit))
