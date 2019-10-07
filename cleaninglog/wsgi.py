@@ -5,6 +5,7 @@ from datetime import datetime
 from flask import request
 
 from his import CUSTOMER, authenticated, authorized, Application
+from previewlib import preview, DeploymentPreviewToken
 from terminallib import Deployment, System
 from timelib import strpdatetime
 from wsgilib import JSON
@@ -79,13 +80,13 @@ def _get_system(ident):
         raise NO_SUCH_SYSTEM
 
 
-def _get_entries(since, until, user=None, deployment=None):
+def _get_entries(since, until, users=None, deployment=None):
     """Yields the respective customer's entries."""
 
-    if user is None:
-        expression = CleaningDate.user << {user.id for user in _get_users()}
-    else:
-        expression = CleaningDate.user == user
+    if users is None:
+        users = {user.id for user in _get_users()}
+
+    expression = CleaningDate.user << users
 
     if deployment is not None:
         expression &= CleaningDate.deployment == deployment
@@ -129,9 +130,9 @@ def list_entries():
     try:
         user = int(request.args['user'])
     except KeyError:
-        user = None
+        users = None
     else:
-        user = _get_user(user)
+        users = {_get_user(user)}
 
     try:
         deployment = request.args['deployment']
@@ -140,7 +141,7 @@ def list_entries():
     else:
         deployment = _get_deployment(deployment)
 
-    entries = _get_entries(since, until, user=user, deployment=deployment)
+    entries = _get_entries(since, until, users=users, deployment=deployment)
     entries = [entry.to_json(annotations=True, cascade=3) for entry in entries]
     return JSON(entries)
 
@@ -222,10 +223,25 @@ def delete_entry(ident):
     return CLEANING_DATE_DELETED
 
 
+@preview(DeploymentPreviewToken)
+def preview_deployment(deployment):
+    """Returns the cleaning log preview for the respective deployment."""
+
+    since = strpdatetime(request.args.get('since'))
+    until = strpdatetime(request.args.get('until'))
+    users = CleaningUser.select().where(
+        (CleaningUser.customer == deployment.customer)
+        & _cleaning_user_selects())
+    entries = _get_entries(since, until, users=users, deployment=deployment)
+    entries = [entry.to_json(annotations=True, cascade=3) for entry in entries]
+    return JSON(entries)
+
+
 APPLICATION.add_routes((
     ('GET', '/users', list_users),
     ('GET', '/', list_entries),
     ('POST', '/', add_entry),
     ('PATCH', '/<int:ident>', modify_entry),
-    ('DELETE', '/<int:ident>', delete_entry)
+    ('DELETE', '/<int:ident>', delete_entry),
+    ('GET', '/preview', preview_deployment)
 ))
