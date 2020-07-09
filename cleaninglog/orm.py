@@ -6,8 +6,8 @@ from datetime import datetime
 from peewee import BooleanField, CharField, DateTimeField, ForeignKeyField
 
 from digsigdb import DigsigdbModel
+from hwdb import Deployment
 from mdb import Customer
-from terminallib import Deployment
 
 from cleaninglog import dom
 from cleaninglog.exceptions import DuplicateUserError
