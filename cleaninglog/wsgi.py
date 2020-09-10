@@ -72,12 +72,10 @@ def _get_deployment(ident):
 def _get_system(ident):
     """Returns the respective system."""
 
-    predicate = System.deployment == Deployment.id
-    select = System.select().join(Deployment, on=predicate)
     condition = (System.id == ident) & (Deployment.customer == CUSTOMER.id)
 
     try:
-        return select.where(condition).get()
+        return System.depjoin().where(condition).get()
     except System.DoesNotExist:
         raise NO_SUCH_SYSTEM
 
