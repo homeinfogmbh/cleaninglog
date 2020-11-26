@@ -1,7 +1,10 @@
 """Common functions."""
 
-from flask import request
+from typing import Iterable
 
+from flask import request, Response
+
+from hwdb import Deployment
 from wsgilib import ACCEPT, JSON, XML
 
 from cleaninglog.dom import cleanings
@@ -11,7 +14,7 @@ from cleaninglog.orm import CleaningDate
 __all__ = ['make_response', 'by_deployment']
 
 
-def make_response(cleaning_dates):
+def make_response(cleaning_dates: Iterable[CleaningDate]) -> XML:
     """Creates a response from the respective dictionary."""
 
     if 'application/json' in ACCEPT:
@@ -27,7 +30,7 @@ def make_response(cleaning_dates):
     return XML(xml)
 
 
-def by_deployment(deployment):
+def by_deployment(deployment: Deployment) -> Response:
     """Returns cleaning dates of the respective deployment."""
 
     try:

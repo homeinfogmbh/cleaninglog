@@ -1,7 +1,9 @@
 """ORM models.
 TODO: Curretly still located in digsigdb / alias "application".
 """
+from __future__ import annotations
 from datetime import datetime
+from typing import Generator, Iterable
 
 from peewee import BooleanField, CharField, DateTimeField, ForeignKeyField
 
@@ -31,7 +33,8 @@ class CleaningUser(DigsigdbModel):
     enabled = BooleanField(default=False)
 
     @classmethod
-    def add(cls, name, customer, pin, annotation=None, enabled=None):
+    def add(cls, name: str, customer: Customer, pin: str,
+            annotation: str = None, enabled: bool = None) -> CleaningUser:
         """Adds a new cleaning user."""
         try:
             cls.get((cls.name == name) & (cls.customer == customer))
@@ -51,7 +54,7 @@ class CleaningUser(DigsigdbModel):
 
         raise DuplicateUserError()
 
-    def to_json(self, short=False, **kwargs):
+    def to_json(self, short: bool = False, **kwargs) -> dict:
         """Returns a JSON-ish dictionary."""
         if short:
             if self.type_ is None:
@@ -75,7 +78,8 @@ class CleaningDate(DigsigdbModel):
     timestamp = DateTimeField()
 
     @classmethod
-    def add(cls, user, deployment, annotations=None):
+    def add(cls, user: CleaningUser, deployment: Deployment,
+            annotations: Iterable[str] = None) -> CleaningDate:
         """Adds a new cleaning record."""
         record = cls()
         record.user = user
@@ -92,7 +96,9 @@ class CleaningDate(DigsigdbModel):
         return record
 
     @classmethod
-    def by_deployment(cls, deployment, limit=None):
+    def by_deployment(cls, deployment: Deployment,
+                      limit: bool = None) -> Generator[
+            CleaningDate, None, None]:
         """Returns a dictionary for the respective address."""
         for counter, cleaning_date in enumerate(cls.select().where(
                 cls.deployment == deployment).order_by(cls.timestamp.desc())):
@@ -101,7 +107,7 @@ class CleaningDate(DigsigdbModel):
 
             yield cleaning_date
 
-    def to_json(self, annotations=False, **kwargs):
+    def to_json(self, annotations: bool = False, **kwargs) -> dict:
         """Returns a JSON compliant dictionary."""
         json = super().to_json(**kwargs)
 
@@ -110,7 +116,7 @@ class CleaningDate(DigsigdbModel):
 
         return json
 
-    def to_dom(self):
+    def to_dom(self) -> dom.Cleaning:
         """Converts the ORM model into an XML DOM."""
         xml = dom.Cleaning()
         xml.timestamp = self.timestamp

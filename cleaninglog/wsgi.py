@@ -1,14 +1,16 @@
 """Authenticated and authorized HIS services."""
 
 from datetime import datetime
+from typing import Iterable
 
 from flask import request
+from peewee import Expression
 
 from his import CUSTOMER, authenticated, authorized, Application
 from hwdb import Deployment, System
 from previewlib import preview, DeploymentPreviewToken
 from timelib import strpdatetime
-from wsgilib import JSON
+from wsgilib import JSON, JSONMessage
 
 from cleaninglog.functions import by_deployment
 from cleaninglog.messages import CLEANING_DATE_CREATED
@@ -29,7 +31,7 @@ __all__ = ['APPLICATION']
 APPLICATION = Application('Cleaning Log', debug=True)
 
 
-def _cleaning_user_selects():
+def _cleaning_user_selects() -> Expression:
     """Returns a basic expression for cleaning users selection."""
 
     return (
@@ -37,14 +39,14 @@ def _cleaning_user_selects():
         & (CleaningUser.enabled == 1))
 
 
-def _get_users():
+def _get_users() -> Iterable[CleaningUser]:
     """Yields the customer's users."""
 
     return CleaningUser.select().where(
         (CleaningUser.customer == CUSTOMER.id) & _cleaning_user_selects())
 
 
-def _get_user(ident):
+def _get_user(ident: int) -> CleaningUser:
     """Returns the respective user."""
 
     try:
@@ -54,10 +56,10 @@ def _get_user(ident):
             & _cleaning_user_selects()
         )
     except CleaningUser.DoesNotExist:
-        raise NO_SUCH_USER
+        raise NO_SUCH_USER from None
 
 
-def _get_deployment(ident):
+def _get_deployment(ident: int) -> Deployment:
     """Returns a deployment by its id."""
 
     try:
@@ -66,10 +68,10 @@ def _get_deployment(ident):
             & (Deployment.customer == CUSTOMER.id)
         )
     except Deployment.DoesNotExist:
-        return NO_SUCH_DEPLOYMENT
+        raise NO_SUCH_DEPLOYMENT from None
 
 
-def _get_system(ident):
+def _get_system(ident: int) -> System:
     """Returns the respective system."""
 
     condition = (System.id == ident) & (Deployment.customer == CUSTOMER.id)
@@ -77,10 +79,12 @@ def _get_system(ident):
     try:
         return System.depjoin().where(condition).get()
     except System.DoesNotExist:
-        raise NO_SUCH_SYSTEM
+        raise NO_SUCH_SYSTEM from None
 
 
-def _get_entries(since, until, users=None, deployment=None):
+def _get_entries(since: datetime, until: datetime,
+                 users: Iterable[CleaningUser] = None,
+                 deployment: Deployment = None) -> Iterable[CleaningDate]:
     """Yields the respective customer's entries."""
 
     if users is None:
@@ -100,7 +104,7 @@ def _get_entries(since, until, users=None, deployment=None):
     return CleaningDate.select().where(expression)
 
 
-def _get_cleaning_date(ident):
+def _get_cleaning_date(ident: int) -> CleaningDate:
     """Returns the respective cleaning date."""
 
     try:
@@ -108,12 +112,12 @@ def _get_cleaning_date(ident):
             (CleaningDate.id == ident) & (CleaningUser.customer == CUSTOMER.id)
         ).get()
     except CleaningDate.DoesNotExist:
-        raise NO_SUCH_CLEANING_DATE
+        raise NO_SUCH_CLEANING_DATE from None
 
 
 @authenticated
 @authorized('cleaninglog')
-def list_users():
+def list_users() -> JSON:
     """Lists the cleaning log users of the respective customer."""
 
     return JSON([user.to_json() for user in _get_users()])
@@ -121,7 +125,7 @@ def list_users():
 
 @authenticated
 @authorized('cleaninglog')
-def list_entries():
+def list_entries() -> JSON:
     """Lists the cleaning log entries of the respective customer."""
 
     since = strpdatetime(request.args.get('since'))
@@ -148,7 +152,7 @@ def list_entries():
 
 @authenticated
 @authorized('cleaninglog')
-def add_entry():
+def add_entry() -> JSONMessage:
     """Adds a cleaning log entry."""
 
     try:
@@ -178,7 +182,7 @@ def add_entry():
 
 @authenticated
 @authorized('cleaninglog')
-def modify_entry(ident):
+def modify_entry(ident: int) -> JSONMessage:
     """Modifies a cleaning log entry."""
 
     cleaning_date = _get_cleaning_date(ident)
@@ -215,7 +219,7 @@ def modify_entry(ident):
 
 @authenticated
 @authorized('cleaninglog')
-def delete_entry(ident):
+def delete_entry(ident: int) -> JSONMessage:
     """Deletes a cleaning log entry."""
 
     cleaning_date = _get_cleaning_date(ident)
