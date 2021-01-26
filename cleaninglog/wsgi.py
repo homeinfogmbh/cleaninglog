@@ -92,7 +92,7 @@ def _get_entries(since: datetime, until: datetime,
 
     expression = CleaningDate.user << users
 
-    if deployment is not None:cascade=True
+    if deployment is not None:
         expression &= CleaningDate.deployment == deployment
 
     if since is not None:
