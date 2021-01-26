@@ -114,7 +114,7 @@ class CleaningDate(DigsigdbModel):
                       limit: bool = None) -> Generator[
             CleaningDate, None, None]:
         """Returns a dictionary for the respective address."""
-        for counter, cleaning_date in enumerate(cls.select().where(
+        for counter, cleaning_date in enumerate(cls.select(cascade=True).where(
                 cls.deployment == deployment).order_by(cls.timestamp.desc())):
             if limit is not None and counter >= limit:
                 return
