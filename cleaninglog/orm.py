@@ -5,11 +5,15 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Generator, Iterable
 
-from peewee import BooleanField, CharField, DateTimeField, ForeignKeyField
+from peewee import BooleanField
+from peewee import CharField
+from peewee import DateTimeField
+from peewee import ForeignKeyField
+from peewee import ModelSelect
 
 from digsigdb import DigsigdbModel
 from hwdb import Deployment
-from mdb import Customer
+from mdb import Address, Company, Customer
 
 from cleaninglog import dom
 from cleaninglog.exceptions import DuplicateUserError
@@ -26,7 +30,8 @@ class CleaningUser(DigsigdbModel):
 
     name = CharField(64)
     type_ = CharField(64, column_name='type', null=True)
-    customer = ForeignKeyField(Customer, column_name='customer')
+    customer = ForeignKeyField(
+        Customer, column_name='customer', lazy_load=False)
     pin = CharField(4)
     annotation = CharField(255, null=True, default=None)
     created = DateTimeField()
@@ -54,6 +59,15 @@ class CleaningUser(DigsigdbModel):
 
         raise DuplicateUserError()
 
+    @classmethod
+    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+        """Selects cleaning users."""
+        if not cascade:
+            return super().select(*args, **kwargs)
+
+        args = {cls, Customer, Company, *args}
+        return super().select(*args, **kwargs).join(Customer).join(Company)
+
     def to_json(self, short: bool = False, **kwargs) -> dict:
         """Returns a JSON-ish dictionary."""
         if short:
@@ -71,10 +85,10 @@ class CleaningDate(DigsigdbModel):
     class Meta:     # pylint: disable=C0111,R0903
         table_name = 'cleaning_date'
 
-    user = ForeignKeyField(CleaningUser, column_name='user')
+    user = ForeignKeyField(CleaningUser, column_name='user', lazy_load=False)
     deployment = ForeignKeyField(
         Deployment, null=True, column_name='deployment', on_delete='CASCADE',
-        on_update='CASCADE')
+        on_update='CASCADE', lazy_load=False)
     timestamp = DateTimeField()
 
     @classmethod
@@ -106,6 +120,21 @@ class CleaningDate(DigsigdbModel):
                 return
 
             yield cleaning_date
+
+    @classmethod
+    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+        """Selects cleaning dates."""
+        if not cascade:
+            return super().select(*args, **kwargs)
+
+        deployment_address = Address.alias()
+        args = {
+            cls, CleaningUser, Customer, Company, Deployment,
+            deployment_address, *args
+        }
+        return super().select(*args, **kwargs).join(CleaningUser).join(
+            Customer).join(Company).join_from(cls, Deployment).join(
+            deployment_address, on=Deployment.address == deployment_address.id)
 
     def to_json(self, annotations: bool = False, **kwargs) -> dict:
         """Returns a JSON compliant dictionary."""
