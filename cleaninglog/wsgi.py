@@ -42,7 +42,7 @@ def _cleaning_user_selects() -> Expression:
 def _get_users() -> Iterable[CleaningUser]:
     """Yields the customer's users."""
 
-    return CleaningUser.select().where(
+    return CleaningUser.select(cascade=True).where(
         (CleaningUser.customer == CUSTOMER.id) & _cleaning_user_selects())
 
 
@@ -50,11 +50,11 @@ def _get_user(ident: int) -> CleaningUser:
     """Returns the respective user."""
 
     try:
-        return CleaningUser.get(
+        return CleaningUser.select(cascade=True).where(
             (CleaningUser.id == ident)
             & (CleaningUser.customer == CUSTOMER.id)
             & _cleaning_user_selects()
-        )
+        ).get()
     except CleaningUser.DoesNotExist:
         raise NO_SUCH_USER from None
 
@@ -63,10 +63,10 @@ def _get_deployment(ident: int) -> Deployment:
     """Returns a deployment by its id."""
 
     try:
-        return Deployment.get(
+        return Deployment.select(cascade=True).where(
             (Deployment.id == ident)
             & (Deployment.customer == CUSTOMER.id)
-        )
+        ).get()
     except Deployment.DoesNotExist:
         raise NO_SUCH_DEPLOYMENT from None
 
@@ -77,7 +77,7 @@ def _get_system(ident: int) -> System:
     condition = (System.id == ident) & (Deployment.customer == CUSTOMER.id)
 
     try:
-        return System.depjoin().where(condition).get()
+        return System.select(cascade=True).where(condition).get()
     except System.DoesNotExist:
         raise NO_SUCH_SYSTEM from None
 
@@ -92,7 +92,7 @@ def _get_entries(since: datetime, until: datetime,
 
     expression = CleaningDate.user << users
 
-    if deployment is not None:
+    if deployment is not None:cascade=True
         expression &= CleaningDate.deployment == deployment
 
     if since is not None:
@@ -101,14 +101,14 @@ def _get_entries(since: datetime, until: datetime,
     if until is not None:
         expression &= CleaningDate.timestamp <= until
 
-    return CleaningDate.select().where(expression)
+    return CleaningDate.select(cascade=True).where(expression)
 
 
 def _get_cleaning_date(ident: int) -> CleaningDate:
     """Returns the respective cleaning date."""
 
     try:
-        return CleaningDate.select().join(CleaningUser).where(
+        return CleaningDate.select(cascade=True).where(
             (CleaningDate.id == ident) & (CleaningUser.customer == CUSTOMER.id)
         ).get()
     except CleaningDate.DoesNotExist:
