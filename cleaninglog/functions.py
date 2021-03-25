@@ -18,9 +18,7 @@ def make_response(cleaning_dates: Iterable[CleaningDate]) -> XML:
     """Creates a response from the respective dictionary."""
 
     if 'application/json' in ACCEPT:
-        return JSON([
-            cleaning_date.to_json(short=True)
-            for cleaning_date in cleaning_dates])
+        return JSON([cd.to_json() for cd in cleaning_dates])
 
     xml = cleanings()
 
