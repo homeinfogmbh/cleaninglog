@@ -146,7 +146,7 @@ def list_entries() -> JSON:
         deployment = _get_deployment(deployment)
 
     entries = _get_entries(since, until, users=users, deployment=deployment)
-    entries = [entry.to_json(annotations=True, cascade=3) for entry in entries]
+    entries = [entry.to_json(cascade=3) for entry in entries]
     return JSON(entries)
 
 

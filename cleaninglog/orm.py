@@ -140,14 +140,11 @@ class CleaningDate(DigsigdbModel):
             Customer).join(Company).join_from(cls, Deployment).join(
             deployment_address, on=Deployment.address == deployment_address.id)
 
-    def to_json(self, annotations: bool = False, **kwargs) -> dict:
+    def to_json(self, **kwargs) -> dict:
         """Returns a JSON compliant dictionary."""
         json = super().to_json(**kwargs)
         json['user'] = self.user.to_json(short=True)
-
-        if annotations:
-            json['annotations'] = [ann.text for ann in self.annotations]
-
+        json['annotations'] = [ann.text for ann in self.annotations]
         return json
 
     def to_dom(self) -> dom.Cleaning:
