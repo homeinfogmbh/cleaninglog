@@ -29,7 +29,7 @@ class CleaningUser(DigsigdbModel):
         table_name = 'cleaning_user'
 
     name = CharField(64)
-    type_ = CharField(64, column_name='type', null=True)
+    type = CharField(64, null=True)
     customer = ForeignKeyField(
         Customer, column_name='customer', lazy_load=False)
     pin = CharField(4)
@@ -71,12 +71,16 @@ class CleaningUser(DigsigdbModel):
     def to_json(self, short: bool = False, **kwargs) -> dict:
         """Returns a JSON-ish dictionary."""
         if short:
-            if self.type_ is None:
+            if self.type is None:
                 return self.name    # Compat.
 
-            return {'name': self.name, 'type': self.type_}
+            return {'name': self.name, 'type': self.type}
 
         return super().to_json(**kwargs)
+
+    def to_dom(self) -> dom.User:
+        """Converts the ORM model into an XML DOM."""
+        return dom.User(self.name, type=self.type)
 
 
 class CleaningDate(DigsigdbModel):
@@ -139,6 +143,7 @@ class CleaningDate(DigsigdbModel):
     def to_json(self, annotations: bool = False, **kwargs) -> dict:
         """Returns a JSON compliant dictionary."""
         json = super().to_json(**kwargs)
+        json['user'] = self.user.to_json()
 
         if annotations:
             json['annotations'] = [ann.text for ann in self.annotations]
@@ -149,9 +154,7 @@ class CleaningDate(DigsigdbModel):
         """Converts the ORM model into an XML DOM."""
         xml = dom.Cleaning()
         xml.timestamp = self.timestamp
-        user = dom.User(self.user.name)
-        user.type = self.user.type_
-        xml.user = user
+        xml.user = self.user.to_dom()
 
         for annotation in self.annotations:
             xml.annotation.append(annotation.text)
