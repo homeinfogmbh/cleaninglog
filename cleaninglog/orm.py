@@ -143,7 +143,7 @@ class CleaningDate(DigsigdbModel):
     def to_json(self, annotations: bool = False, **kwargs) -> dict:
         """Returns a JSON compliant dictionary."""
         json = super().to_json(**kwargs)
-        json['user'] = self.user.to_json()
+        json['user'] = self.user.to_json(short=True)
 
         if annotations:
             json['annotations'] = [ann.text for ann in self.annotations]
