@@ -10,6 +10,6 @@ setup(
     author_email='<info at homeinfo dot de>',
     maintainer='Richard Neumann',
     maintainer_email='<r dot neumann at homeinfo priod de>',
-    packages=['cleaninglog'],
+    packages=['cleaninglog', 'cleaninglog.wsgi'],
     license='GPLv3',
     description='HIS microservice to handle cleaning logs.')
