@@ -17,7 +17,7 @@ from cleaninglog.orm import CleaningDate, CleaningUser
 __all__ = ['APPLICATION']
 
 
-CORS = {'origins': 'https://cleaninglog.homeinfo.de'}
+CORS = {'origins': ['https://cleaninglog.homeinfo.de']}
 APPLICATION = Application('cleaninglog', cors=CORS)
 CONFIG = ConfigParser()
 CONFIG_FILE = Path('/usr/local/etc/cleaninglog.conf')
