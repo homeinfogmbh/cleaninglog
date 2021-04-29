@@ -64,9 +64,6 @@ function submit () {
 }
 
 
-/*
-    Synchronizes the respective system.
-*/
 export function init (system) {
     const btnSubmit = document.getElementById('commit');
     btnSubmit.addEventListener('click', suppressEvent(submit), false);
