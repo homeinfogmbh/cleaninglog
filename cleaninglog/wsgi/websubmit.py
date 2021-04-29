@@ -1,7 +1,9 @@
 """Web interface to submit cleaning log entries."""
 
+from configparser import ConfigParser
 from datetime import datetime
-from typing import Union
+from pathlib import Path
+from typing import List, Union
 
 from flask import request
 
@@ -17,7 +19,8 @@ __all__ = ['APPLICATION']
 
 CORS = {'origins': 'cleaninglog.homeinfo.de'}
 APPLICATION = Application('cleaninglog', cors=CORS)
-RECAPTCHA_SECRET = ''
+CONFIG = ConfigParser()
+CONFIG_FILE = Path('/usr/local/etc/cleaninglog.conf')
 
 
 def authorize(deployment_id: int, pin: str) -> Deployment:
@@ -36,13 +39,21 @@ def authorize(deployment_id: int, pin: str) -> Deployment:
     return (cleaning_user, deployment)
 
 
+@APPLICATION.before_first_request
+def load() -> List[str]:
+    """Loads the configuration."""
+
+    return CONFIG.read(CONFIG_FILE)
+
+
 @APPLICATION.route('/', methods=['POST'])
 def submit() -> Union[Error, OK]:
     """Submits an entry."""
 
+    recaptcha_secret = CONFIG.get('recaptcha', 'secret')
     recaptcha_response = request.json.pop('recaptcha_response')
 
-    if not verify(RECAPTCHA_SECRET, recaptcha_response, fail_silently=True):
+    if not verify(recaptcha_secret, recaptcha_response, fail_silently=True):
         return Error('ReCAPTCHA check failed.', status=403)
 
     deployment_id = request.json.pop('deployment')
