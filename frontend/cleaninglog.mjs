@@ -51,10 +51,12 @@ function *getAnnotations () {
 
 function getJSON () {
     const params = new URLSearchParams(window.location.search);
+    const recaptchaResponse = grecaptcha.execute();
     return {
         pin: document.getElementById('pin').value,
         deployment: parseInt(params.get('deployment')),
-        annotations: Array.from(getAnnotations())
+        annotations: Array.from(getAnnotations()),
+        recaptchaResponse: recaptchaResponse
     };
 }
 

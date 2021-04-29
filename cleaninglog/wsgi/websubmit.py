@@ -51,7 +51,7 @@ def submit() -> Union[Error, OK]:
     """Submits an entry."""
 
     recaptcha_secret = CONFIG.get('recaptcha', 'secret')
-    recaptcha_response = request.json.pop('recaptcha_response')
+    recaptcha_response = request.json.pop('recaptchaResponse')
 
     if not verify(recaptcha_secret, recaptcha_response, fail_silently=True):
         return Error('ReCAPTCHA check failed.', status=403)

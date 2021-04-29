@@ -21,6 +21,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Reinigungsnachweis</title>
   <link rel="stylesheet" href="https://css.homeinfo.de/w3.css">
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <script type="module">
     import { init } from './cleaninglog.mjs';
     document.addEventListener('DOMContentLoaded', init);
@@ -49,6 +50,12 @@
   <br/>
   <button id="commit" type="submit" class="w3-button w3-green">Eintragen</button>
 </form>
+
+<div class="g-recaptcha"
+  data-sitekey="6LdyqL4aAAAAAIRDPqgjNd8xLRJzHrcxxbVl4LjR"
+  data-callback="onSubmit"
+  data-size="invisible">
+</div>
 
 <br/>
 
