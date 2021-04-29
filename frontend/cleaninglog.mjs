@@ -23,7 +23,7 @@
 import { suppressEvent } from 'https://javascript.homeinfo.de/lib.mjs';
 import { request } from 'https://javascript.homeinfo.de/his/his.mjs';
 
-const URL = 'https://backend.homeinfo.de/cleaninglog';
+const URL = 'https://backend.homeinfo.de/cleaninglog-websubmit';
 const CHECKBOX_VALUES = {
     'cleaning': "Reinigung",
     'gardening': "Garten",
