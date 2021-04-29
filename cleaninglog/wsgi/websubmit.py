@@ -62,7 +62,7 @@ def submit() -> Union[Error, OK]:
     try:
         cleaning_user, deployment = authorize(deployment_id, pin)
     except (Deployment.DoesNotExist, CleaningUser.DoesNotExist):
-        return Error(f'Invalid credentials: {deployment_id}/{pin}.', status=403)
+        return Error('Invalid credentials.', status=403)
 
     annotations = request.json.pop('annotations')
     CleaningDate.add(cleaning_user, deployment, annotations)
