@@ -20,13 +20,54 @@
 */
 'use strict';
 
+import { suppressEvent } from 'https://javascript.homeinfo.de/lib.mjs';
 import { request } from 'https://javascript.homeinfo.de/his/his.mjs';
 
-export const BASE_URL = 'https://backend.homeinfo.de/cleaninglog';
+const URL = 'https://backend.homeinfo.de/cleaninglog';
+const CHECKBOX_VALUES = {
+    'cleaning': "Reinigung",
+    'gardening': "Garten",
+    'maintenance': "Wartung"
+};
+
+
+function *getAnnotations () {
+    let checkbox;
+
+    for (const id of CHECKBOX_VALUES) {
+        checkbox = document.getElementById(id);
+
+        if (checkbox.checked)
+            yield CHECKBOX_VALUES[id];
+    }
+
+    const misc = document.getElementById('miscellaneous');
+    const miscText = misc.value.trim();
+
+    if (miscText != '')
+        yield miscText;
+}
+
+
+function getJSON () {
+    const params = new URLSearchParams(window.location.search);
+    return {
+        pin: document.getElementById('pin').value,
+        deployment: parseInt(params.get('deployment')),
+        annotations: Array.from(getAnnotations())
+    };
+}
+
+
+function submit () {
+    return request.post(URL, getJSON());
+}
 
 
 /*
     Synchronizes the respective system.
 */
 export function init (system) {
+    const btnSubmit = document.getElementById('commit');
+    btnSubmit.addEventListener('click', suppressEvent(submit), false);
 }
