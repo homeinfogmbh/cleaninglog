@@ -1,6 +1,62 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
+<!--
+  @licstart  The following is the entire license notice for the JavaScript code in this page.
+  The JavaScript code in this page is free software: you can
+  redistribute it and/or modify it under the terms of the GNU
+  General Public License (GNU GPL) as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option)
+  any later version.  The code is distributed WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS
+  FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+  As additional permission under GNU GPL version 3 section 7, you
+  may distribute non-source (e.g., minimized or compacted) forms of
+  that code without the copy of the GNU GPL normally required by
+  section 4, provided you include this license notice and a URL
+  through which recipients can access the Corresponding Source.
+  @licend  The above is the entire license notice
+-->
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Reinigungsnachweis</title>
+  <link rel="stylesheet" href="css/w3.css">
+  <link rel="stylesheet" href="css/termgr.css">
+  <script type="module">
+    import { init } from './cleaninglog.mjs.mjs';
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
 </head>
-<p>Under construction.</p>
+
+<div class="w3-container w3-teal">
+  <h1>Anmeldung</h1>
+</div>
+
+<br/>
+
+<form class="w3-container">
+  <input id="pin" type="password" class="w3-input" placeholder="PIN" autocomplete="on" required>
+  <br/>
+  <input id="cleaning" class="w3-check" type="checkbox" checked="checked">
+  <label>Reinigungsnachweis</label>
+  <br/>
+  <input id="gardening" class="w3-check" type="checkbox" checked="checked">
+  <label>Garten</label>
+  <br/>
+  <input id="maintenance" class="w3-check" type="checkbox" checked="checked">
+  <label>Wartung</label>
+  <br/>
+  <input id="miscellaneous" class="w3-check" type="checkbox" checked="checked">
+  <label>Anderes</label>
+  <input id="miscellaneousText" class="w3-input w3-hover-green" type="text">
+  <br/>
+  <button id="commit" type="submit" class="w3-button w3-green">Eintrage</button>
+</form>
+
+<br/>
+
+<div class="w3-container w3-teal">
+  <footer>
+    <p>Umsetzung <a href="http://www.homeinfo.de" target="_blank">HOMEINFO GmbH</a> &copy; 2021</p>
+  </footer>
+</div>
