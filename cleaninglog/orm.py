@@ -93,23 +93,19 @@ class CleaningDate(DigsigdbModel):
     deployment = ForeignKeyField(
         Deployment, null=True, column_name='deployment', on_delete='CASCADE',
         on_update='CASCADE', lazy_load=False)
-    timestamp = DateTimeField()
+    timestamp = DateTimeField(default=datetime.now)
 
     @classmethod
     def add(cls, user: CleaningUser, deployment: Deployment,
             annotations: Iterable[str] = None) -> CleaningDate:
         """Adds a new cleaning record."""
-        record = cls()
-        record.user = user
-        record.deployment = deployment
-        record.timestamp = datetime.now()
+        record = cls(user=user, deployment=deployment)
         record.save()
 
-        if annotations:
-            for annotation in annotations:
-                annotation = CleaningAnnotation(
-                    cleaning_date=record, text=annotation)
-                annotation.save()
+        for annotation in annotations or ():
+            annotation = CleaningAnnotation(
+                cleaning_date=record, text=annotation)
+            annotation.save()
 
         return record
 
