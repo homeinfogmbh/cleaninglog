@@ -62,9 +62,8 @@ function getJSON (recaptchaResponse) {
 
 function submit () {
     const recaptchaResponse = grecaptcha.getResponse();
-    console.log('Response: <' + recaptchaResponse + '>');
 
-    if (recaptchaResponse == '')
+    if (!recaptchaResponse)
         return alert('Bitte das reCAPTCHA lösen.');
 
     grecaptcha.reset();
