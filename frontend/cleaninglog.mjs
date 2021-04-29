@@ -52,7 +52,7 @@ function *getAnnotations () {
 function getJSON () {
     const params = new URLSearchParams(window.location.search);
     const recaptchaResponse = grecaptcha.execute();
-    console.log('ReCAPTCHA response: ' + recaptchaResponse);
+    console.log('ReCAPTCHA response: ' + JSON.stringify(recaptchaResponse));
     return {
         pin: document.getElementById('pin').value,
         deployment: parseInt(params.get('deployment')),
