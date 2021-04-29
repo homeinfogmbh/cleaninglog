@@ -46,7 +46,7 @@ def load() -> List[str]:
     return CONFIG.read(CONFIG_FILE)
 
 
-@APPLICATION.route('/', methods=['POST'])
+@APPLICATION.route('/', methods=['POST'], strict_slashes=False)
 def submit() -> Union[Error, OK]:
     """Submits an entry."""
 
