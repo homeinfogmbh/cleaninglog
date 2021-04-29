@@ -34,7 +34,7 @@ class CleaningUser(DigsigdbModel):
         Customer, column_name='customer', lazy_load=False)
     pin = CharField(4)
     annotation = CharField(255, null=True, default=None)
-    created = DateTimeField()
+    created = DateTimeField(datetime.now)
     enabled = BooleanField(default=False)
 
     @classmethod
@@ -44,12 +44,8 @@ class CleaningUser(DigsigdbModel):
         try:
             cls.get((cls.name == name) & (cls.customer == customer))
         except cls.DoesNotExist:
-            record = cls()
-            record.name = name
-            record.customer = customer
-            record.pin = pin
-            record.annotation = annotation
-            record.created = datetime.now()
+            record = cls(name=name, customer=customer, pin=pin,
+                         annotation=annotation)
 
             if enabled is not None:
                 record.enabled = enabled
