@@ -49,14 +49,8 @@ function *getAnnotations () {
 }
 
 
-function getJSON () {
+function getJSON (recaptchaResponse) {
     const params = new URLSearchParams(window.location.search);
-    console.log('ReCAPTCHA object: ' + grecaptcha);
-    console.log('ReCAPTCHA type: ' + typeof grecaptcha);
-    console.log('ReCAPTCHA JSON: ' + JSON.stringify(grecaptcha));
-    const recaptchaResponse = grecaptcha.getResponse();
-    grecaptcha.reset();
-    console.log('ReCAPTCHA response: ' + recaptchaResponse);
     return {
         pin: document.getElementById('pin').value,
         deployment: parseInt(params.get('deployment')),
@@ -67,7 +61,13 @@ function getJSON () {
 
 
 function submit () {
-    return request.post(URL, getJSON());
+    const recaptchaResponse = grecaptcha.getResponse();
+
+    if (!recaptchaResponse) {
+        return alert('Bitte das reCAPTCHA lösen.');
+
+    grecaptcha.reset();
+    return request.post(URL, getJSON(recaptchaResponse));
 }
 
 
