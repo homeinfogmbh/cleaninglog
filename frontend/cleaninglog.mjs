@@ -34,7 +34,7 @@ const CHECKBOX_VALUES = {
 function *getAnnotations () {
     let checkbox;
 
-    for (const id of CHECKBOX_VALUES) {
+    for (const id in CHECKBOX_VALUES) {
         checkbox = document.getElementById(id);
 
         if (checkbox.checked)
