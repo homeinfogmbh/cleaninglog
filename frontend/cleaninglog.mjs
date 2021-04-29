@@ -51,6 +51,9 @@ function *getAnnotations () {
 
 function getJSON () {
     const params = new URLSearchParams(window.location.search);
+    console.log('ReCAPTCHA object: ' + grecaptcha);
+    console.log('ReCAPTCHA type: ' + typeof grecaptcha);
+    console.log('ReCAPTCHA JSON: ' + JSON.stringify(grecaptcha));
     const recaptchaResponse = grecaptcha.getResponse();
     grecaptcha.reset();
     console.log('ReCAPTCHA response: ' + recaptchaResponse);
