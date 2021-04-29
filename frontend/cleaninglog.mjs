@@ -67,7 +67,10 @@ function submit () {
         return alert('Bitte das reCAPTCHA lösen.');
 
     grecaptcha.reset();
-    return request.post(URL, getJSON(recaptchaResponse));
+    return request.post(URL, getJSON(recaptchaResponse)).then(
+        () => alert('Reinigung eingetragen.'),
+        () => alert('Fehler!.\nFalsche Zugangsdaten.')
+    );
 }
 
 
