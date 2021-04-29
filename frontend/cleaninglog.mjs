@@ -21,7 +21,7 @@
 'use strict';
 
 import { suppressEvent } from 'https://javascript.homeinfo.de/lib.mjs';
-import { request } from 'https://javascript.homeinfo.de/his/his.mjs';
+import { request } from 'https://javascript.homeinfo.de/requests.mjs';
 
 const URL = 'https://backend.homeinfo.de/cleaninglog-websubmit';
 const CHECKBOX_VALUES = {
