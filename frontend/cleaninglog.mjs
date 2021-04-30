@@ -29,6 +29,7 @@ const CHECKBOX_VALUES = {
     'gardening': "Garten",
     'maintenance': "Wartung"
 };
+const PARAMS = new URLSearchParams(window.location.search);
 
 
 function *getAnnotations () {
@@ -48,12 +49,34 @@ function *getAnnotations () {
         yield miscText;
 }
 
+function getAddress () {
+    const street = PARAMS.get('s');
+    const houseNumber = PARAMS.get('h');
+    let address = '';
+
+    if (street) {
+        address += street;
+
+        if (houseNumber)
+            address += ' ' + houseNumber;
+    }
+
+    return address
+}
+
+
+function setAddress () {
+    const address = getAddress();
+
+    if (address)
+        document.getElementById('address').innerHTML = address;
+}
+
 
 function getJSON (recaptchaResponse) {
-    const params = new URLSearchParams(window.location.search);
     return {
         pin: document.getElementById('pin').value,
-        deployment: parseInt(params.get('deployment')),
+        deployment: parseInt(PARAMS.get('d')),
         annotations: Array.from(getAnnotations()),
         recaptchaResponse: recaptchaResponse
     };
@@ -77,4 +100,5 @@ function submit () {
 export function init (system) {
     const btnSubmit = document.getElementById('commit');
     btnSubmit.addEventListener('click', suppressEvent(submit), false);
+    setAddress();
 }
