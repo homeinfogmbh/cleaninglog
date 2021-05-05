@@ -52,16 +52,15 @@ function *getAnnotations () {
 function getAddress () {
     const street = PARAMS.get('s');
     const houseNumber = PARAMS.get('h');
-    let address = '';
+    const address = [];
 
-    if (street) {
-        address += street;
+    if (street)
+        address.push(street);
 
-        if (houseNumber)
-            address += ' ' + houseNumber;
-    }
+    if (houseNumber)
+        address.push(houseNumber);
 
-    return address
+    return address.join(' ');
 }
 
 
