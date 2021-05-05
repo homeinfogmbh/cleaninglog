@@ -83,18 +83,20 @@ function getJSON (recaptchaResponse) {
 }
 
 
-function showResult (result) {
+function showResult (message, result = false) {
     const container = document.getElementById('result');
 
     if (result) {
-        container.innerHTML = 'Reinigung eingetragen.';
+        container.innerHTML = message;
         container.classList.remove('w3-red');
         container.classList.add('w3-green');
     } else {
-        container.innerHTML = 'Falsche Zugangsdaten!';
+        container.innerHTML = message;
         container.classList.remove('w3-green');
         container.classList.add('w3-red');
     }
+
+    return result;
 }
 
 
@@ -102,12 +104,12 @@ function submit () {
     const recaptchaResponse = grecaptcha.getResponse();
 
     if (!recaptchaResponse)
-        return alert('Bitte das reCAPTCHA lösen.');
+        return showResult('Bitte das reCAPTCHA lösen.');
 
     grecaptcha.reset();
     return request.post(URL, getJSON(recaptchaResponse)).then(
-        () => showResult(true),
-        () => showResult(false)
+        () => showResult('Reinigung eingetragen.', true),
+        () => showResult('Falsche Zugangsdaten!')
     );
 }
 
