@@ -84,7 +84,7 @@ function getJSON (recaptchaResponse) {
 
 
 function showResult (result) {
-    container = document.getElementById('result');
+    const container = document.getElementById('result');
 
     if (result) {
         container.innerHTML = 'Reinigung eingetragen.';
