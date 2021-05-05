@@ -83,6 +83,21 @@ function getJSON (recaptchaResponse) {
 }
 
 
+function showResult (result) {
+    container = document.getElementById('result');
+
+    if (result) {
+        container.innerHTML = 'Reinigung eingetragen.';
+        container.classList.remove('w3-green');
+        container.classList.add('w3-red');
+    } else {
+        container.innerHTML = 'Falsche Zugangsdaten!';
+        container.classList.remove('w3-red');
+        container.classList.add('w3-green');
+    }
+}
+
+
 function submit () {
     const recaptchaResponse = grecaptcha.getResponse();
 
@@ -91,8 +106,8 @@ function submit () {
 
     grecaptcha.reset();
     return request.post(URL, getJSON(recaptchaResponse)).then(
-        () => alert('Reinigung eingetragen.'),
-        () => alert('Fehler!.\nFalsche Zugangsdaten.')
+        () => showResult(true),
+        () => showResult(false)
     );
 }
 
