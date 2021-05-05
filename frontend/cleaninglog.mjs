@@ -88,12 +88,12 @@ function showResult (result) {
 
     if (result) {
         container.innerHTML = 'Reinigung eingetragen.';
-        container.classList.remove('w3-green');
-        container.classList.add('w3-red');
-    } else {
-        container.innerHTML = 'Falsche Zugangsdaten!';
         container.classList.remove('w3-red');
         container.classList.add('w3-green');
+    } else {
+        container.innerHTML = 'Falsche Zugangsdaten!';
+        container.classList.remove('w3-green');
+        container.classList.add('w3-red');
     }
 }
 
