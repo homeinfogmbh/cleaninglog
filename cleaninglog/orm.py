@@ -31,7 +31,7 @@ class CleaningUser(DigsigdbModel):
     name = CharField(64)
     type = CharField(64, null=True)
     customer = ForeignKeyField(
-        Customer, column_name='customer', lazy_load=False)
+        Customer, column_name='customer', on_delete='CASCADE', lazy_load=False)
     pin = CharField(4)
     annotation = CharField(255, null=True, default=None)
     created = DateTimeField(datetime.now)
@@ -85,7 +85,8 @@ class CleaningDate(DigsigdbModel):
     class Meta:     # pylint: disable=C0111,R0903
         table_name = 'cleaning_date'
 
-    user = ForeignKeyField(CleaningUser, column_name='user', lazy_load=False)
+    user = ForeignKeyField(
+        CleaningUser, column_name='user', on_delete='CASCADE', lazy_load=False)
     deployment = ForeignKeyField(
         Deployment, null=True, column_name='deployment', on_delete='CASCADE',
         on_update='CASCADE', lazy_load=False)
