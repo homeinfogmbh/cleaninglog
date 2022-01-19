@@ -9,7 +9,6 @@ from peewee import Expression
 from his import CUSTOMER, authenticated, authorized, Application
 from hwdb import Deployment, System
 from previewlib import preview, DeploymentPreviewToken
-from timelib import strpdatetime
 from wsgilib import JSON, JSONMessage
 
 from cleaninglog.functions import by_deployment
@@ -128,8 +127,11 @@ def list_users() -> JSON:
 def list_entries() -> JSON:
     """Lists the cleaning log entries of the respective customer."""
 
-    since = strpdatetime(request.args.get('since'))
-    until = strpdatetime(request.args.get('until'))
+    if (since := request.args.get('since')) is not None:
+        since = datetime.fromisoformat(since)
+
+    if (until := request.args.get('until')) is not None:
+        until = datetime.fromisoformat(until)
 
     try:
         user = int(request.args['user'])
@@ -227,11 +229,11 @@ def delete_entry(ident: int) -> JSONMessage:
     return CLEANING_DATE_DELETED
 
 
-APPLICATION.add_routes((
+APPLICATION.add_routes([
     ('GET', '/users', list_users),
     ('GET', '/', list_entries),
     ('POST', '/', add_entry),
     ('PATCH', '/<int:ident>', modify_entry),
     ('DELETE', '/<int:ident>', delete_entry),
     ('GET', '/preview', preview(DeploymentPreviewToken)(by_deployment))
-))
+])
