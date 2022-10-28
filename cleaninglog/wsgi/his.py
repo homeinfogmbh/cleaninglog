@@ -35,14 +35,16 @@ def _cleaning_user_selects() -> Expression:
 
     return (
         (CleaningUser.created < datetime.now())
-        & (CleaningUser.enabled == 1))
+        & (CleaningUser.enabled == 1)
+    )
 
 
 def _get_users() -> Iterable[CleaningUser]:
     """Yields the customer's users."""
 
     return CleaningUser.select(cascade=True).where(
-        (CleaningUser.customer == CUSTOMER.id) & _cleaning_user_selects())
+        (CleaningUser.customer == CUSTOMER.id) & _cleaning_user_selects()
+    )
 
 
 def _get_user(ident: int) -> CleaningUser:
@@ -81,9 +83,12 @@ def _get_system(ident: int) -> System:
         raise NO_SUCH_SYSTEM from None
 
 
-def _get_entries(since: datetime, until: datetime,
-                 users: Iterable[CleaningUser] = None,
-                 deployment: Deployment = None) -> Iterable[CleaningDate]:
+def _get_entries(
+        since: datetime,
+        until: datetime,
+        users: Iterable[CleaningUser] = None,
+        deployment: Deployment = None
+) -> Iterable[CleaningDate]:
     """Yields the respective customer's entries."""
 
     if users is None:
@@ -145,7 +150,7 @@ def list_entries() -> JSON:
     except KeyError:
         deployment = None
     else:
-        deployment = _get_deployment(deployment)
+        deployment = _get_deployment(int(deployment))
 
     entries = _get_entries(since, until, users=users, deployment=deployment)
     entries = [entry.to_json(cascade=3) for entry in entries]
