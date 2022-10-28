@@ -1,9 +1,9 @@
 """ORM models.
-TODO: Curretly still located in digsigdb / alias "application".
+TODO: Currently still located in digsigdb / alias "application".
 """
 from __future__ import annotations
 from datetime import datetime
-from typing import Generator, Iterable
+from typing import Iterable, Iterator
 
 from peewee import BooleanField
 from peewee import CharField
@@ -25,27 +25,38 @@ __all__ = ['CleaningUser', 'CleaningDate', 'CleaningAnnotation']
 class CleaningUser(DigsigdbModel):
     """Accounts for valet service employees."""
 
-    class Meta:     # pylint: disable=C0111,R0903
+    class Meta:
         table_name = 'cleaning_user'
 
     name = CharField(64)
     type = CharField(64, null=True)
     customer = ForeignKeyField(
-        Customer, column_name='customer', on_delete='CASCADE', lazy_load=False)
+        Customer, column_name='customer', on_delete='CASCADE', lazy_load=False
+    )
     pin = CharField(4)
     annotation = CharField(255, null=True, default=None)
     created = DateTimeField(datetime.now)
     enabled = BooleanField(default=False)
 
     @classmethod
-    def add(cls, name: str, customer: Customer, pin: str,
-            annotation: str = None, enabled: bool = None) -> CleaningUser:
+    def add(
+            cls,
+            name: str,
+            customer: Customer,
+            pin: str,
+            annotation: str = None,
+            enabled: bool = None
+    ) -> CleaningUser:
         """Adds a new cleaning user."""
         try:
             cls.get((cls.name == name) & (cls.customer == customer))
         except cls.DoesNotExist:
-            record = cls(name=name, customer=customer, pin=pin,
-                         annotation=annotation)
+            record = cls(
+                name=name,
+                customer=customer,
+                pin=pin,
+                annotation=annotation
+            )
 
             if enabled is not None:
                 record.enabled = enabled
@@ -56,13 +67,14 @@ class CleaningUser(DigsigdbModel):
         raise DuplicateUserError()
 
     @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+    def select(cls, *args, cascade: bool = False) -> ModelSelect:
         """Selects cleaning users."""
         if not cascade:
-            return super().select(*args, **kwargs)
+            return super().select(*args)
 
-        args = {cls, Customer, Company, *args}
-        return super().select(*args, **kwargs).join(Customer).join(Company)
+        return super().select(
+            cls, Customer, Company, *args
+        ).join(Customer).join(Company)
 
     def to_json(self, short: bool = False, **kwargs) -> dict:
         """Returns a JSON-ish dictionary."""
@@ -82,56 +94,68 @@ class CleaningUser(DigsigdbModel):
 class CleaningDate(DigsigdbModel):
     """Cleaning chart entries."""
 
-    class Meta:     # pylint: disable=C0111,R0903
+    class Meta:
         table_name = 'cleaning_date'
 
     user = ForeignKeyField(
-        CleaningUser, column_name='user', on_delete='CASCADE', lazy_load=False)
+        CleaningUser, column_name='user', on_delete='CASCADE', lazy_load=False
+    )
     deployment = ForeignKeyField(
         Deployment, null=True, column_name='deployment', on_delete='CASCADE',
-        on_update='CASCADE', lazy_load=False)
+        on_update='CASCADE', lazy_load=False
+    )
     timestamp = DateTimeField(default=datetime.now)
 
     @classmethod
-    def add(cls, user: CleaningUser, deployment: Deployment,
-            annotations: Iterable[str] = None) -> CleaningDate:
+    def add(
+            cls,
+            user: CleaningUser,
+            deployment: Deployment,
+            annotations: Iterable[str] = ()
+    ) -> CleaningDate:
         """Adds a new cleaning record."""
         record = cls(user=user, deployment=deployment)
         record.save()
 
-        for annotation in annotations or ():
+        for annotation in annotations:
             annotation = CleaningAnnotation(
-                cleaning_date=record, text=annotation)
+                cleaning_date=record, text=annotation
+            )
             annotation.save()
 
         return record
 
     @classmethod
-    def by_deployment(cls, deployment: Deployment,
-                      limit: bool = None) -> Generator[
-            CleaningDate, None, None]:
+    def by_deployment(
+            cls,
+            deployment: Deployment,
+            limit: bool = None
+    ) -> Iterator[CleaningDate]:
         """Returns a dictionary for the respective address."""
-        for counter, cleaning_date in enumerate(cls.select(cascade=True).where(
-                cls.deployment == deployment).order_by(cls.timestamp.desc())):
+        for counter, cleaning_date in enumerate(
+                cls.select(cascade=True).where(
+                    cls.deployment == deployment).order_by(
+                    cls.timestamp.desc())
+        ):
             if limit is not None and counter >= limit:
                 return
 
             yield cleaning_date
 
     @classmethod
-    def select(cls, *args, cascade: bool = False, **kwargs) -> ModelSelect:
+    def select(cls, *args, cascade: bool = False) -> ModelSelect:
         """Selects cleaning dates."""
         if not cascade:
-            return super().select(*args, **kwargs)
+            return super().select(*args)
 
         deployment_address = Address.alias()
-        args = {
+        return super().select(
             cls, CleaningUser, Customer, Company, Deployment,
             deployment_address, *args
-        }
-        return super().select(*args, **kwargs).join(CleaningUser).join(
+        ).join(CleaningUser).join(
             Customer).join(Company).join_from(cls, Deployment).join(
-            deployment_address, on=Deployment.address == deployment_address.id)
+            deployment_address, on=Deployment.address == deployment_address.id
+        )
 
     def to_json(self, **kwargs) -> dict:
         """Returns a JSON compliant dictionary."""
@@ -155,10 +179,11 @@ class CleaningDate(DigsigdbModel):
 class CleaningAnnotation(DigsigdbModel):
     """Optional annotations for cleaning log entries."""
 
-    class Meta:     # pylint: disable=C0111,R0903
+    class Meta:
         table_name = 'cleaning_annotation'
 
     cleaning_date = ForeignKeyField(
         CleaningDate, column_name='cleaning_date', backref='annotations',
-        on_delete='CASCADE')
+        on_delete='CASCADE'
+    )
     text = CharField(255)
