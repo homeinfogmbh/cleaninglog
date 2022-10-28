@@ -23,7 +23,7 @@ CONFIG = ConfigParser()
 CONFIG_FILE = Path('/usr/local/etc/cleaninglog.conf')
 
 
-def authorize(deployment_id: int, pin: str) -> Deployment:
+def authorize(deployment_id: int, pin: str) -> tuple[CleaningUser, Deployment]:
     """Returns the respective cleaning user and deployment if
     the user identified by the PIN may submit entries for it.
     """
@@ -36,7 +36,7 @@ def authorize(deployment_id: int, pin: str) -> Deployment:
         & (CleaningUser.created < datetime.now())
         & (CleaningUser.enabled == 1)
     ).get()
-    return (cleaning_user, deployment)
+    return cleaning_user, deployment
 
 
 @APPLICATION.before_first_request
