@@ -3,7 +3,7 @@
 from configparser import ConfigParser
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union
+from typing import Union
 
 from flask import request
 
@@ -21,6 +21,7 @@ CORS = {'origins': ['https://cleaninglog.homeinfo.de']}
 APPLICATION = Application('cleaninglog', cors=CORS)
 CONFIG = ConfigParser()
 CONFIG_FILE = Path('/usr/local/etc/cleaninglog.conf')
+CONFIG.read(CONFIG_FILE)
 
 
 def authorize(deployment_id: int, pin: str) -> tuple[CleaningUser, Deployment]:
@@ -37,13 +38,6 @@ def authorize(deployment_id: int, pin: str) -> tuple[CleaningUser, Deployment]:
         & (CleaningUser.enabled == 1)
     ).get()
     return cleaning_user, deployment
-
-
-@APPLICATION.before_first_request
-def load() -> List[str]:
-    """Loads the configuration."""
-
-    return CONFIG.read(CONFIG_FILE)
 
 
 @APPLICATION.route('/', methods=['POST'], strict_slashes=False)
