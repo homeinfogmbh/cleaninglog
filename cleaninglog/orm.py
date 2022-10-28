@@ -3,7 +3,7 @@ TODO: Currently still located in digsigdb / alias "application".
 """
 from __future__ import annotations
 from datetime import datetime
-from typing import Iterable, Iterator
+from typing import Iterable, Iterator, Optional
 
 from peewee import BooleanField
 from peewee import CharField
@@ -105,16 +105,22 @@ class CleaningDate(DigsigdbModel):
         on_update='CASCADE', lazy_load=False
     )
     timestamp = DateTimeField(default=datetime.now)
+    user_timestamp = DateTimeField(null=True)
 
     @classmethod
     def add(
             cls,
             user: CleaningUser,
             deployment: Deployment,
-            annotations: Iterable[str] = ()
+            annotations: Iterable[str] = (),
+            user_timestamp: Optional[datetime] = None
     ) -> CleaningDate:
         """Adds a new cleaning record."""
-        record = cls(user=user, deployment=deployment)
+        record = cls(
+            user=user,
+            deployment=deployment,
+            user_timestamp=user_timestamp
+        )
         record.save()
 
         for annotation in annotations:
