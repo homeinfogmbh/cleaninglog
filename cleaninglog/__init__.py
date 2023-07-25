@@ -7,11 +7,11 @@ from cleaninglog.orm import CleaningUser, CleaningDate, CleaningAnnotation
 
 
 __all__ = [
-    'DuplicateUserError',
-    'by_deployment',
-    'cleanings',
-    'make_response',
-    'CleaningUser',
-    'CleaningDate',
-    'CleaningAnnotation'
+    "DuplicateUserError",
+    "by_deployment",
+    "cleanings",
+    "make_response",
+    "CleaningUser",
+    "CleaningDate",
+    "CleaningAnnotation",
 ]

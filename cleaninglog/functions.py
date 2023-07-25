@@ -11,13 +11,13 @@ from cleaninglog.dom import cleanings
 from cleaninglog.orm import CleaningDate
 
 
-__all__ = ['make_response', 'by_deployment']
+__all__ = ["make_response", "by_deployment"]
 
 
 def make_response(cleaning_dates: Iterable[CleaningDate]) -> Union[JSON, XML]:
     """Creates a response from the respective dictionary."""
 
-    if 'application/json' in ACCEPT:
+    if "application/json" in ACCEPT:
         return JSON([cd.to_json() for cd in cleaning_dates])
 
     xml = cleanings()
@@ -32,7 +32,7 @@ def by_deployment(deployment: Deployment) -> Union[JSON, XML]:
     """Returns cleaning dates of the respective deployment."""
 
     try:
-        limit = int(request.args['limit'])
+        limit = int(request.args["limit"])
     except KeyError:
         limit = 10
     else:

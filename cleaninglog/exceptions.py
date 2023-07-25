@@ -1,7 +1,7 @@
 """Common exceptions."""
 
 
-__all__ = ['DuplicateUserError']
+__all__ = ["DuplicateUserError"]
 
 
 class DuplicateUserError(Exception):
